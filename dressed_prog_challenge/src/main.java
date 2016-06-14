@@ -9,6 +9,9 @@ import java.io.File;
 public class main {
     public static void main(String[] args)
     {
+        //name of the commands file for processing by the class!
+        final String cmd_file = "commands.txt";
+
         //welcome messages and directions
         System.out.println("Welcome, lets get started with the day!");
         System.out.println("Let us help you get ready!");
@@ -23,7 +26,7 @@ public class main {
         File input_file;
 
         //scanner object to rad an input file if passed by user
-        Scanner in_file;
+        Scanner in_file = null;
 
 
         //get the input value from the user - file path or command
@@ -32,75 +35,81 @@ public class main {
         //check if input file was provided
         if(user_input.contains("/"))
         {
-            try
-            {
-                //get the input file
-                input_file = new File(user_input);
+
+            //construct the day object
+            Day today = new Day();
+
+            //process the commands file properly
+            today.process_commands_file(cmd_file);
+
+            //get the input file
+            input_file = new File(user_input);
+
+            try {
 
                 //set the input file scanner object for io
                 in_file = new Scanner(input_file);
-
-                //announce to the user that the file is open successfully
-                System.out.println("File: " + user_input.substring(user_input.lastIndexOf("/")+1) +
-                        " has been opened successfully!");
-
-                //stores a line from the file
-                String line;
-
-                //go through each line of the input file
-                while(in_file.hasNextLine())
-                {
-                    //get a line from the file
-                    line = in_file.nextLine();
-
-                    //if a new line character is consumed continue to next iteration
-                    if(line.equals(""))
-                        continue;
-
-                    //print out the requested line to the console
-                    System.out.println("Requested: " + line);
-
-                    //construct the temperature object
-                    temp today = new temp();
-
-                    try {
-                        //start the day with the input
-                        today.start_day(line);
-                    }
-                    catch(Exception except)
-                    {
-                        //if any problems occur report them standard out
-                        System.out.println(except.getMessage());
-                    }
-
-                    System.out.println("\n\n");
-
-                }
             }
-            catch(Exception ex)
+            catch(Exception exc)
             {
-                //handle all exceptions with exit message
-                System.out.println("File does not exist or is unreadable!");
+                //if opening the file fails print error and exit
+                System.out.println("Unable to open file: " +
+                        user_input.substring(user_input.lastIndexOf("/")+1));
 
-                //print the trace
-                ex.printStackTrace();
-
-                //exit with error
                 System.exit(-1);
             }
 
+            //announce to the user that the file is open successfully
+            System.out.println("File: " + user_input.substring(user_input.lastIndexOf("/")+1) +
+                    " has been opened successfully!");
+
+            //stores a line from the file
+            String line;
+
+            //go through each line of the input file
+            while(in_file.hasNextLine())
+            {
+                //get a line from the file
+                line = in_file.nextLine();
+
+                //if a new line character is consumed continue to next iteration
+                if(line.equals(""))
+                    continue;
+
+                //print out the requested line to the console
+                System.out.println("Requested: " + line);
+
+                //collect any exceptions from the evaluate function and
+                //display them to the console
+                try {
+                    today.evaluate(line);
+                }
+                catch(Exception except)
+                {
+                    //if any problems occur report them standard out
+                    System.out.println(except.getMessage());
+                }
+
+                System.out.println("\n\n");
+
+            }
         }
         else
         {
+            //construct the day object
+            Day today = new Day();
+
+            //process the commands file properly
+            today.process_commands_file(cmd_file);
+
             while (!user_input.toLowerCase().equals("quit") && !user_input.toLowerCase().equals("exit")) {
 
-                //construct the temperature object
-                temp today = new temp();
-
                 //handle exceptions resulting in unsuccessful commands
-                try {
-                    today.start_day(user_input);
-                } catch (Exception e) {
+                try
+                {
+                    today.evaluate(user_input);
+                } catch (Exception e)
+                {
                     System.out.println(e.getMessage());
                 }
 
@@ -110,8 +119,6 @@ public class main {
                 //obtain user input
                 user_input = keyboard.nextLine();
             }
-
         }
-
     }
 }
